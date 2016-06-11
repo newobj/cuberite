@@ -79,11 +79,11 @@ endif()
 if(MSVC OR MSVC_IDE)
 	if( MSVC_VERSION LESS 1700 )       # VC10- / VS2010-
 		message(FATAL_ERROR "The project requires C++11 features. "
-		"You need at least Visual Studio 11 (Microsoft Visual Studio 2012), "
-		"with Microsoft Visual C++ Compiler Nov 2012 CTP (v120_CTP_Nov2012).")
+			"You need at least Visual Studio 11 (Microsoft Visual Studio 2012), "
+			"with Microsoft Visual C++ Compiler Nov 2012 CTP (v120_CTP_Nov2012).")
 	elseif( MSVC_VERSION EQUAL 1700 )  # VC11 / VS2012
 		message( "VC11: using Microsoft Visual Studio 2012 "
-		"with Microsoft Visual C++ Compiler Nov 2012 CTP (v120_CTP_Nov2012)" )
+			"with Microsoft Visual C++ Compiler Nov 2012 CTP (v120_CTP_Nov2012)" )
 		set(CMAKE_GENERATOR_TOOLSET "v120_CTP_Nov2012" CACHE STRING "Platform Toolset" FORCE)
 	else() # VC12+, assuming C++11 supported.
 	endif()
@@ -105,17 +105,19 @@ if(${BUILD_UNSTABLE_TOOLS})
 	add_subdirectory(Tools/GeneratorPerformanceTest/)
 endif()
 
-include(CheckCXXCompilerFlag)
+# The Android toolchain sets its own flags; interference is bad
 include(SetFlags.cmake)
-set_flags()
-set_lib_flags()
-enable_profile()
+if (NOT ANDROID)
+	include(CheckCXXCompilerFlag)
+	set_flags()
+	set_lib_flags()
+	enable_profile()
+endif()
 
 # Under Windows, we need Lua as DLL; on *nix we need it linked statically:
 if (WIN32)
 	add_definitions(-DLUA_BUILD_AS_DLL)
 endif()
-
 
 # The Expat library is linked in statically, make the source files aware of that:
 add_definitions(-DXML_STATIC)
@@ -131,7 +133,7 @@ endif()
 # Build all dependent libraries as static:
 SET(CMAKE_BUILD_STATIC_LIBRARIES ON)
 
-
+####
 
 
 
@@ -161,40 +163,40 @@ set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "Generate and install .pc file
 link_directories(lib/jsoncpp/src/lib_json)
 
 # Check that the libraries are present:
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/SQLiteCpp/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/SQLiteCpp/CMakeLists.txt)
 	message(FATAL_ERROR "SQLiteCpp is missing in folder lib/SQLiteCpp. Have you initialized the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/polarssl/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/polarssl/CMakeLists.txt)
 	message(FATAL_ERROR "PolarSSL is missing in folder lib/polarssl. Have you initialized the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/libevent/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/libevent/CMakeLists.txt)
 	message(FATAL_ERROR "LibEvent is missing in folder lib/libevent. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/jsoncpp/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/jsoncpp/CMakeLists.txt)
 	message(FATAL_ERROR "JsonCPP is missing in folder lib/jsoncpp. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/cmake-coverage/CodeCoverage.cmake)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/cmake-coverage/CodeCoverage.cmake)
 	message(FATAL_ERROR "cmake-coverage is missing in folder lib/cmake-coverage. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/expat/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/expat/CMakeLists.txt)
 	message(FATAL_ERROR "expat is missing in folder lib/expat. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/lua/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/lua/CMakeLists.txt)
 	message(FATAL_ERROR "lua is missing in folder lib/lua. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/luaexpat/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/luaexpat/CMakeLists.txt)
 	message(FATAL_ERROR "luaexpat is missing in folder lib/luaexpat. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/luaproxy/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/luaproxy/CMakeLists.txt)
 	message(FATAL_ERROR "luaproxy is missing in folder lib/luaproxy. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/sqlite/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/sqlite/CMakeLists.txt)
 	message(FATAL_ERROR "sqlite is missing in folder lib/sqlite. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/tolua++/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/tolua++/CMakeLists.txt)
 	message(FATAL_ERROR "tolua++ is missing in folder lib/tolua++. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/zlib/CMakeLists.txt)
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/zlib/CMakeLists.txt)
 	message(FATAL_ERROR "zlib is missing in folder lib/zlib. Have you initialized and updated the submodules / downloaded the extra libraries?")
 endif()
 
@@ -228,19 +230,21 @@ if (WIN32)
 	add_subdirectory(lib/luaproxy/)
 endif()
 
-
 # We use EXCLUDE_FROM_ALL so that only the explicit dependencies are used
 # (PolarSSL also has test and example programs in their CMakeLists.txt, we don't want those)
 include(lib/polarssl.cmake EXCLUDE_FROM_ALL)
 
-set_exe_flags()
+# Android toolchain sets its own flags
+if (NOT ANDROID)
+	set_exe_flags()
+endif()
 
-add_subdirectory (src)
+add_subdirectory(src)
 
 if(${SELF_TEST})
 	message("Tests enabled")
 	enable_testing()
-	add_subdirectory (tests)
+	add_subdirectory(tests)
 endif()
 
 # Put projects into solution folders in MSVC:

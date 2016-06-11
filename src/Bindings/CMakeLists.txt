@@ -129,7 +129,7 @@ set(BINDING_DEPENDENCIES
 	../World.h
 )
 
-if (NOT MSVC)
+if (NOT MSVC AND NOT ANDROID)
 	ADD_CUSTOM_COMMAND(
 		# add any new generated bindings here
 		OUTPUT ${BINDING_OUTPUTS}
