@@ -370,15 +370,22 @@ template class SizeChecker<UInt8,  1>;
 			fflush(stdout); \
 		}
 	#endif
-	#define ASSERT(x) do { if (!(x)) { throw cAssertFailure();} } while (0)
+
+	// ASSERT is a Debug-only macro, it is always compiled out in non-debug builds
+	#ifdef _DEBUG
+		#define ASSERT(x) do { if (!(x)) { throw cAssertFailure();} } while (0)
+	#else
+		#define ASSERT(x)
+	#endif  // _DEBUG
+
 	#define testassert(x) do { if (!(x)) { REPORT_ERROR("Test failure: %s, file %s, line %d\n", #x, __FILE__, __LINE__); exit(1); } } while (0)
 	#define CheckAsserts(x) do { try {x} catch (cAssertFailure) { break; } REPORT_ERROR("Test failure: assert didn't fire for %s, file %s, line %d\n", #x, __FILE__, __LINE__); exit(1); } while (0)
 
 #else
-	#ifdef  _DEBUG
-		#define ASSERT( x) ( !!(x) || ( LOGERROR("Assertion failed: %s, file %s, line %i", #x, __FILE__, __LINE__), PrintStackTrace(), assert(0), 0))
+	#ifdef _DEBUG
+		#define ASSERT(x) ( !!(x) || ( LOGERROR("Assertion failed: %s, file %s, line %i", #x, __FILE__, __LINE__), PrintStackTrace(), assert(0), 0))
 	#else
-		#define ASSERT(x) ((void)(x))
+		#define ASSERT(x)
 	#endif
 #endif
 
